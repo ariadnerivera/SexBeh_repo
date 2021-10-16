@@ -23,7 +23,7 @@ the files is:
 - These files restrict analysis to those who answered the ACASI portion of the questionnaire and those aged 20 or more.
 3. [Code to get outcomes by characteristic](code/3_Outcomes_NYCHANES_NHANES_AR_20211005.do)
 - This code creates tabulations needed for graphs and sample sizes and puts results in an excel file.
-4. [Code to create Table 1 tabulations](code/4_DescriptiveCharacteristics_NYCHANES_NHANES_Table1_AR)
+4. [Code to create Table 1 tabulations](code/4_DescriptiveCharacteristics_NYCHANES_NHANES_Table1_AR.do)
 - This code is to create tabulations included in Table 1 of the manuscript
 5. [Code for graphs](code/5_Graphs_NYCHANES_NHANES_SEXBEH_AR_20210921.R)
 - This code is to create the graphs included.
