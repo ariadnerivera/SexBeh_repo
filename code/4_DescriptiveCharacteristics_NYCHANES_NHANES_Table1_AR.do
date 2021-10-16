@@ -5,19 +5,19 @@ use "C:\Users\rivera30\OneDrive - NYU Langone Health\NYC Sexual Behavior\Ariadne
 ****Have you had type of sexual intercourse****;
 gen everhadvagsex=. 
 replace everhadvagsex=1 if SXQ_1M == 1 | SXQ_1F == 1
-replace everhadvagsex=10 if SXQ_1M == 2 | SXQ_1F == 2
+replace everhadvagsex=0 if SXQ_1M == 2 | SXQ_1F == 2
 
 gen everhadoralsex=. 
 replace everhadoralsex=1 if SXQ_2M == 1 | SXQ_2F == 1
-replace everhadoralsex=10 if SXQ_2M == 2 | SXQ_2F == 2
+replace everhadoralsex=0 if SXQ_2M == 2 | SXQ_2F == 2
 
 gen everhadanalsex=. 
 replace everhadanalsex=1 if SXQ_3M == 1 | SXQ_3F == 1
-replace everhadanalsex=10 if SXQ_3M == 2 | SXQ_3F == 2
+replace everhadanalsex=0 if SXQ_3M == 2 | SXQ_3F == 2
 
 gen everhadsamesexsex=. 
 replace everhadsamesexsex=1 if SXQ_4M == 1 | SXQ_4F == 1
-replace everhadsamesexsex=10 if SXQ_4M == 2 | SXQ_4F == 2
+replace everhadsamesexsex=0 if SXQ_4M == 2 | SXQ_4F == 2
 
 rename *, lower
 
@@ -200,30 +200,23 @@ replace oralsexpartners =. if everhadoralsex==0 & oralsexpartners==0
 replace samesexpartners =. if everhadsamesexsex ==0 & samesexpartners==0
 replace analsexpartners =. if everhadanalsex ==0 & analsexpartners==0
 
-*unweighed
-tab gender
-tab agegrp5c
-tab race
-tab bmi3cat
-tab everhadvagsex
-tab everhadoralsex
-tab everhadsamesexsex
-tab1 vagsexpartners oralsexpartners samesexpartners
+
+keep if included==1
 
 *weighted
-svy: tab gender, stdize(agegrp5c) stdweight(STDWGT5) ci
-svy: tab agegrp5c ci
-svy: tab race, stdize(agegrp5c) stdweight(STDWGT5) ci
-svy: tab bmi3cat, stdize(agegrp5c) stdweight(STDWGT5) ci
-svy: tab everhadvagsex, stdize(agegrp5c) stdweight(STDWGT5) ci
-svy: tab everhadoralsex, stdize(agegrp5c) stdweight(STDWGT5) ci
-svy: tab everhadsamesexsex, stdize(agegrp5c) stdweight(STDWGT5) ci
-svy: tab everhadanalsex, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab gender, stdize(agegrp4cat) stdweight(STDWGT4) ci
+svy: tab agegrp5c, ci
+svy: tab race, stdize(agegrp4cat) stdweight(STDWGT4) ci
+svy: tab bmi3cat, stdize(agegrp4cat) stdweight(STDWGT4) ci
+svy: tab everhadvagsex, stdize(agegrp4cat) stdweight(STDWGT4) ci
+svy: tab everhadoralsex, stdize(agegrp4cat) stdweight(STDWGT4) ci
+svy: tab everhadsamesexsex, stdize(agegrp4cat) stdweight(STDWGT4) ci
+svy: tab everhadanalsex, stdize(agegrp4cat) stdweight(STDWGT4) ci
 
-svy: tab vagsexpartners, stdize(agegrp5c) stdweight(STDWGT5) ci
-svy: tab oralsexpartners, stdize(agegrp5c) stdweight(STDWGT5) ci
-svy: tab samesexpartners, stdize(agegrp5c) stdweight(STDWGT5) ci
-svy: tab analsexpartners, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab vagsexpartners, stdize(agegrp4cat) stdweight(STDWGT4) ci
+svy: tab oralsexpartners, stdize(agegrp4cat) stdweight(STDWGT4) ci
+svy: tab samesexpartners, stdize(agegrp4cat) stdweight(STDWGT4) ci
+svy: tab analsexpartners, stdize(agegrp4cat) stdweight(STDWGT4) ci
 
 
 ************ NHANES
@@ -233,7 +226,7 @@ svy: tab analsexpartners, stdize(agegrp5c) stdweight(STDWGT5) ci
 *CLUSTER SDMVPSU;
 *STRATA SDMVSTRA;
 
-use "C:\Users\rivera30\OneDrive - NYU Langone Health\NYC Sexual Behavior\Ariadne\national1114_v2.dta" , clear
+use "C:\Users\rivera30\OneDrive - NYU Langone Health\NYC Sexual Behavior\Ariadne\SexBeh_repo\analytic_data\NHANES_2011_2014.dta" , clear
 
 svyset sdmvpsu [pweight= mec4yr], strata(sdmvstra) singleunit(certainty) || _n
 
@@ -460,17 +453,18 @@ tab everhadoralsex
 tab everhadsamesexsex
 tab1 vagsexpartners oralsexpartners samesexpartners
 
+keep if included
 *weighted
-svy: tab gender, stdize(agegrp5c) stdweight(STDWGT5) ci
-svy: tab agegrp5c, ci
-svy: tab race, stdize(agegrp5c) stdweight(STDWGT5) ci
-svy: tab bmi3cat, stdize(agegrp5c) stdweight(STDWGT5) ci
-svy: tab everhadvagsex, stdize(agegrp5c) stdweight(STDWGT5) ci
-svy: tab everhadoralsex, stdize(agegrp5c) stdweight(STDWGT5) ci
-svy: tab everhadsamesexsex, stdize(agegrp5c) stdweight(STDWGT5) ci
-svy: tab everhadanalsex, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab gender, stdize(agegrp4cat) stdweight(STDWGT4) ci
+svy: tab agegrp4cat, ci
+svy: tab race, stdize(agegrp4cat) stdweight(STDWGT4) ci
+svy: tab bmi3cat, stdize(agegrp4cat) stdweight(STDWGT4) ci
+svy: tab everhadvagsex, stdize(agegrp4cat) stdweight(STDWGT4) ci
+svy: tab everhadoralsex, stdize(agegrp4cat) stdweight(STDWGT4) ci
+svy: tab everhadsamesexsex, stdize(agegrp4cat) stdweight(STDWGT4) ci
+svy: tab everhadanalsex, stdize(agegrp4cat) stdweight(STDWGT4) ci
 
-svy: tab vagsexpartners, stdize(agegrp5c) stdweight(STDWGT5) ci
-svy: tab oralsexpartners, stdize(agegrp5c) stdweight(STDWGT5) ci
-svy: tab samesexpartners, stdize(agegrp5c) stdweight(STDWGT5) ci
-svy: tab analsexpartners, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab vagsexpartners, stdize(agegrp4cat) stdweight(STDWGT4) ci
+svy: tab oralsexpartners, stdize(agegrp4cat) stdweight(STDWGT4) ci
+svy: tab samesexpartners, stdize(agegrp4cat) stdweight(STDWGT4) ci
+svy: tab analsexpartners, stdize(agegrp4cat) stdweight(STDWGT4) ci
