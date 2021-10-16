@@ -1,16 +1,31 @@
 
 
-use "C:\Users\rivera30\OneDrive - NYU Langone Health\NYC Sexual Behavior\Ariadne\nychanes_v1_spage.dta" , clear
+use "C:\Users\rivera30\OneDrive - NYU Langone Health\NYC Sexual Behavior\Ariadne\SexBeh_repo\analytic_data\NYCHANES_2013_2014.dta", clear
 
+****Have you had type of sexual intercourse****;
+gen everhadvagsex=. 
+replace everhadvagsex=1 if SXQ_1M == 1 | SXQ_1F == 1
+replace everhadvagsex=10 if SXQ_1M == 2 | SXQ_1F == 2
+
+gen everhadoralsex=. 
+replace everhadoralsex=1 if SXQ_2M == 1 | SXQ_2F == 1
+replace everhadoralsex=10 if SXQ_2M == 2 | SXQ_2F == 2
+
+gen everhadanalsex=. 
+replace everhadanalsex=1 if SXQ_3M == 1 | SXQ_3F == 1
+replace everhadanalsex=10 if SXQ_3M == 2 | SXQ_3F == 2
+
+gen everhadsamesexsex=. 
+replace everhadsamesexsex=1 if SXQ_4M == 1 | SXQ_4F == 1
+replace everhadsamesexsex=10 if SXQ_4M == 2 | SXQ_4F == 2
+
+rename *, lower
 
 gen agegrp4cat=.
 replace agegrp4cat=1 if spage>=20 & spage<30
 replace agegrp4cat=2 if spage>=30 & spage<40
 replace agegrp4cat=3 if spage>=40 & spage<50
 replace agegrp4cat=4 if spage>=50 & spage<60
-
-
-* Will need to fix survey design
 
 gen agegrp6c=.
 replace agegrp6c=1 if spage>=20 & spage<30
@@ -19,7 +34,6 @@ replace agegrp6c=3 if spage>=40 & spage<50
 replace agegrp6c=4 if spage>=50 & spage<60
 replace agegrp6c=5 if spage>=60 & spage<70
 replace agegrp6c=6 if spage>=70 
-
 
 * In SAS this is the svy design
 * weight: acasi_wt;
@@ -197,19 +211,19 @@ tab everhadsamesexsex
 tab1 vagsexpartners oralsexpartners samesexpartners
 
 *weighted
-svy: tab gender, stdize(agegrp5c) stdweight(STDWGT5)
-svy: tab agegrp5c
-svy: tab race, stdize(agegrp5c) stdweight(STDWGT5)
-svy: tab bmi3cat, stdize(agegrp5c) stdweight(STDWGT5)
-svy: tab everhadvagsex, stdize(agegrp5c) stdweight(STDWGT5)
-svy: tab everhadoralsex, stdize(agegrp5c) stdweight(STDWGT5)
-svy: tab everhadsamesexsex, stdize(agegrp5c) stdweight(STDWGT5)
-svy: tab everhadanalsex, stdize(agegrp5c) stdweight(STDWGT5)
+svy: tab gender, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab agegrp5c ci
+svy: tab race, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab bmi3cat, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab everhadvagsex, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab everhadoralsex, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab everhadsamesexsex, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab everhadanalsex, stdize(agegrp5c) stdweight(STDWGT5) ci
 
-svy: tab vagsexpartners, stdize(agegrp5c) stdweight(STDWGT5) 
-svy: tab oralsexpartners, stdize(agegrp5c) stdweight(STDWGT5)
-svy: tab samesexpartners, stdize(agegrp5c) stdweight(STDWGT5)
-svy: tab analsexpartners, stdize(agegrp5c) stdweight(STDWGT5)
+svy: tab vagsexpartners, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab oralsexpartners, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab samesexpartners, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab analsexpartners, stdize(agegrp5c) stdweight(STDWGT5) ci
 
 
 ************ NHANES
@@ -447,16 +461,16 @@ tab everhadsamesexsex
 tab1 vagsexpartners oralsexpartners samesexpartners
 
 *weighted
-svy: tab gender, stdize(agegrp5c) stdweight(STDWGT5)
-svy: tab agegrp5c
-svy: tab race, stdize(agegrp5c) stdweight(STDWGT5)
-svy: tab bmi3cat, stdize(agegrp5c) stdweight(STDWGT5)
-svy: tab everhadvagsex, stdize(agegrp5c) stdweight(STDWGT5)
-svy: tab everhadoralsex, stdize(agegrp5c) stdweight(STDWGT5)
-svy: tab everhadsamesexsex, stdize(agegrp5c) stdweight(STDWGT5)
-svy: tab everhadanalsex, stdize(agegrp5c) stdweight(STDWGT5)
+svy: tab gender, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab agegrp5c, ci
+svy: tab race, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab bmi3cat, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab everhadvagsex, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab everhadoralsex, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab everhadsamesexsex, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab everhadanalsex, stdize(agegrp5c) stdweight(STDWGT5) ci
 
-svy: tab vagsexpartners, stdize(agegrp5c) stdweight(STDWGT5) 
-svy: tab oralsexpartners, stdize(agegrp5c) stdweight(STDWGT5) 
-svy: tab samesexpartners, stdize(agegrp5c) stdweight(STDWGT5)
-svy: tab analsexpartners, stdize(agegrp5c) stdweight(STDWGT5)
+svy: tab vagsexpartners, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab oralsexpartners, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab samesexpartners, stdize(agegrp5c) stdweight(STDWGT5) ci
+svy: tab analsexpartners, stdize(agegrp5c) stdweight(STDWGT5) ci

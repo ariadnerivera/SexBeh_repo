@@ -492,7 +492,7 @@ tab2xl bmi3cat analsexpartners if agegrp4cat!=. using NYCtabs_20210818, col(24) 
 *CLUSTER SDMVPSU;
 *STRATA SDMVSTRA;
 
-use "C:\Users\rivera30\OneDrive - NYU Langone Health\NYC Sexual Behavior\Ariadne\national1114_v2.dta" , clear
+use "C:\Users\rivera30\OneDrive - NYU Langone Health\NYC Sexual Behavior\Ariadne\SexBeh_repo\analytic_data\NHANES_2011_2014.dta" , clear
 
 svyset sdmvpsu [pweight= mec4yr], strata(sdmvstra) singleunit(certainty) || _n
 
