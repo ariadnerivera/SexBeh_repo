@@ -3,7 +3,7 @@
 *							NYCHANES							*
 *****************************************************************
 
-use "C:\Users\rivera30\OneDrive - NYU Langone Health\NYC Sexual Behavior\Ariadne\SexBeh_repo\raw_data\nyc-hanes-datasets-and-resources-analytic-data-sets-sas-file.dta" 
+use "C:\Users\rivera30\OneDrive - NYU Langone Health\NYC Sexual Behavior\Ariadne\SexBeh_repo\raw_data\nyc-hanes-datasets-and-resources-analytic-data-sets-sas-file.dta" , clear
 
 keep ACASI_WT AGEGROUP AGEGRP3C AGEGRP4C AGEGRP5C ASIAN BMI BMI3CAT BMI4CAT ///
  BORN US_BORN BOROSTRATUM CAPI_WT DMQ_1 DMQ_2 DMQ_5 DMQ_6 DMQ_12 DMQ_15 ///
@@ -36,13 +36,16 @@ replace included=1 if inlist(SXQ_1M, 1, 2) | inlist(SXQ_2M, 1, 2) | ///
 replace included=. if SXQ_1M==. & SXQ_2M==. & SXQ_3M==. & SXQ_4M==. & ///
 	SXQ_1F==. & SXQ_2F==. & SXQ_3F==. & SXQ_4F==.
 
-	
+
+keep if included==1
+
 save "C:\Users\rivera30\OneDrive - NYU Langone Health\NYC Sexual Behavior\Ariadne\SexBeh_repo\analytic_data\NYCHANES_2013_2014.dta", replace
 
 
 *****************************************************************
 *							NHANES								*
 *****************************************************************
+
 cd "C:\Users\rivera30\OneDrive - NYU Langone Health\NYC Sexual Behavior\Ariadne\SexBeh_repo\raw_data"
 *2013-2014 NHANES
 * Demographic data
@@ -106,5 +109,6 @@ gen mec4yr = 1/2 * wtmec2yr
 gen included=.
 replace included=1 if sxd021==1 | sxd021==2
 
+keep if included==1
 
 save "C:\Users\rivera30\OneDrive - NYU Langone Health\NYC Sexual Behavior\Ariadne\SexBeh_repo\analytic_data\NHANES_2011_2014.dta", replace
