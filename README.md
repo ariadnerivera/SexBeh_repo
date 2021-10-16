@@ -4,7 +4,7 @@ and NHANES data.
 
 All data files used in this analysis are publicly available.
 
-NHANES
+**NHANES**
 We will need the files for: demographic data, reproductive health, sexual health,
 and BMI.
 
@@ -12,12 +12,12 @@ and BMI.
 
 * NHANES data for 2013-2014 can be downloaded from https://wwwn.cdc.gov/nchs/nhanes/continuousnhanes/default.aspx?BeginYear=2013
 
-NYCHANES
+**NYCHANES**
 * NYC HANES for 2013-2014 can be downloaded from https://med.nyu.edu/departments-institutes/population-health/divisions-sections-centers/epidemiology/center-innovation-measuring-population-health/new-york-city-health-nutrition-examination-survey/datasets-resources
 
 
 All analysis was conducted in STATA, graphs were made in R. The order to run
-the files is: 
+the files is:
 1. [Convert NYC HANES SAS file to STATA](code/1_CodetoConvert_NYCHANES_SAStoSTATA_AR_20211015.R)
 2. [Create analytic files for NHANES and NYCHANES](code/2_NYCHANES_NHANES_AnalyticFiles_AR_20211015.do)
 - These files restrict analysis to those who answered the ACASI portion of the questionnaire and those aged 20 or more.
@@ -29,7 +29,7 @@ the files is:
 - This code is to create the graphs included.
 
 The outputs of the code used are as follows:
-- The raw files are [here](/raw_data)
-- The intermediate files are [here](/intermediate_data)
-- The analytic files are [here](/analytic_data)
-- Results and graphs included in this study are [here](/results)
+- The **raw files** are [here](/raw_data)
+- The **intermediate files** are [here](/intermediate_data)
+- The **analytic files** are [here](/analytic_data)
+- **Results** and **graphs** included in this study are [here](/results)
