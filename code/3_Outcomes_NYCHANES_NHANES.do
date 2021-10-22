@@ -1,8 +1,17 @@
 
-*NYC Hanes, this is based on Priscillas cleaning
+*****************************************************************************
+* This code is to clean and create the variables for descriptive figures in 
+* the analysis
+
+* The cleaning and recoding is based on Priscilla's SAS code
+
 
 use "C:\Users\rivera30\OneDrive - NYU Langone Health\NYC Sexual Behavior\Ariadne\SexBeh_repo\analytic_data\NYCHANES_2013_2014.dta", clear
 cd "C:\Users\rivera30\OneDrive - NYU Langone Health\NYC Sexual Behavior\Ariadne\SexBeh_repo\results"
+
+**********************************************************************
+************ NYC HANES Cleaning recoding ************ 
+**********************************************************************
 
 
 ****Have you had type of sexual intercourse****;
@@ -45,26 +54,21 @@ replace agegrp6c=6 if spage>=70
 * STRATA BOROSTRATUM;
 
 egen cluster = group(psunest hhnest)
-
 svyset cluster [pweight= acasi_wt], strata(borostratum) singleunit(certainty) || _n
 
 svy: tab gender bmi3cat, se
 svy: tab gender bmi3cat, se missing count cellwidth(15) format(%15.2g)
 
 
-* Question how to get age standardized weights. 
 * Standard weight for age groups
 * STDVAR agegrp5c;
 * STDWGT 0.180912 0.172873 0.189153 0.184935 0.272127;
 
 * Past year, number of sex partners 
-
 * Following this classification: https://link.springer.com/article/10.1007/s13178-021-00568-9/tables/2 
-
 * Vaginal Sex *
 
 * In the past 12 months, with how many men/women have you had vaginal sex? 
-
 gen vagsexpartners=. 
 replace vagsexpartners=0 if  sxq_8m==0 | sxq_8f==0
 replace vagsexpartners=1 if  sxq_8m==1 | sxq_8f==1
@@ -92,7 +96,6 @@ tab vagsexpartners sxq_8f if gender==2, mi
 
 
 * Oral sex * 
-
 * In the past 12 months, with how many men/women have you had oral sex? 
 gen oralsexpartners=. 
 replace oralsexpartners=0 if  sxq_9m==0 | sxq_9f==0
@@ -107,7 +110,6 @@ replace oralsexpartners=0 if gender==2 & sxq_2f==2
 * tab to check if the replacement was correct
 tab oralsexpartners sxq_2m if gender==1 , mi
 tab oralsexpartners sxq_2f if gender==2, mi
-
 
 * In the past 12 months, with how many men/women have you had same sex? 
 gen samesexpartners=. 
@@ -139,10 +141,8 @@ replace analsexpartners=2 if  (sxq_10f>1 & sxq_10f<.)
 * Replace with 0 if never had anal sex in life 
 replace analsexpartners=0 if gender==1 & sxq_3m==2 & analsexpartners==.
 replace analsexpartners=0 if gender==2 & sxq_3f==2 & analsexpartners==.
-
 replace analsexpartners=0 if gender==1 & sxq_4m==2 & analsexpartners==.
 replace analsexpartners=0 if gender==2 & sxq_4f==2 & analsexpartners==.
-
 
 * create weight to standardize by age, 5 groups
 gen STDWGT4=.
@@ -160,125 +160,136 @@ replace STDWGT5=0.193365 if agegrp5c==3
 replace STDWGT5=0.186107 if agegrp5c==4
 replace STDWGT5=0.253177 if agegrp5c==5
 
-*weights to standardize by age and sex
-*gen STDWGTFEM=.
-*replace STDWGTFEM=0.180912 if agegrp5c==1 & gender==2
-*replace STDWGTFEM=0.172873 if agegrp5c==2 & gender==2
-*replace STDWGTFEM=0.189153 if agegrp5c==3 & gender==2
-*replace STDWGTFEM=0.184935 if agegrp5c==4 & gender==2
-*replace STDWGTFEM=0.272127 if agegrp5c==5 & gender==2
-
-*gen STDWGTMALE=.
-*replace STDWGTMALE=0.198278 if agegrp5c==1 & gender==1
-*replace STDWGTMALE=0.183522 if agegrp5c==2 & gender==1
-*replace STDWGTMALE=0.197851 if agegrp5c==3 & gender==1
-*replace STDWGTMALE=0.187354 if agegrp5c==4 & gender==1
-*replace STDWGTMALE=0.232995 if agegrp5c==5 & gender==1
-
-
-*AGEGRP6C	Population	Weight
-*1: 20-29	42687848	0.189321581
-*2: 30-39	40141741	0.178029538
-*3: 40-49	43599555	0.193365022
-*4: 50-59	41962930	0.186106553
-*5: 60-69	29253187	0.129738552
-*6: 70 and over	27832721	0.123438753
-*Total	225477982	1
-
-
-* create weight to standardize by age, 6 groups
-gen STDWGT6=.
-replace STDWGT6=0.189321581 if agegrp6c==1
-replace STDWGT6=0.178029538 if agegrp6c==2
-replace STDWGT6=0.193365022 if agegrp6c==3
-replace STDWGT6=0.186106553 if agegrp6c==4
-replace STDWGT6=0.129738552 if agegrp6c==5
-replace STDWGT6=0.123438753 if agegrp6c==6
-
 
 
 svy, over(bmi3cat): prop vagsexpartners
 svy, over(race): prop vagsexpartners
 
 
-*Sex 
-putexcel set NYC_HANES_4cat_20211016.xlsx, sheet(ever_sex) modify
+*** Ever yes/no vaginal, oral, anal, same sex
 
+************ 
+*Sex 
+putexcel set NYC_HANES.xlsx, sheet(ever_sex) modify
+
+*Vaginal
 svy, over(gender): prop everhadvagsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix evervagsex_sex = r(table)
 matrix sampleevervagsex_sex = e(N)
 putexcel A1 = matrix(evervagsex_sex), names nformat(number_d4)
 putexcel A12= matrix(sampleevervagsex_sex)
 
+*Oral
 svy, over(gender): prop everhadoralsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix everoralsex_sex = r(table)
 matrix sampleeveroralsex_sex = e(N)
 putexcel A15 = matrix(everoralsex_sex), names nformat(number_d4)
 putexcel A26= matrix(sampleeveroralsex_sex)
 
+*Same sex
 svy, over(gender): prop everhadsamesexsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix eversamesex_sex = r(table)
 matrix sampleeversamesex_sex = e(N)
 putexcel A30 = matrix(eversamesex_sex), names nformat(number_d4)
 putexcel A41= matrix(sampleeversamesex_sex)
 
+*Anal
 svy, over(gender): prop everhadanalsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix everhadanalsex_sex = r(table)
 matrix sampleeveranalsex_sex = e(N)
 putexcel A45 = matrix(everhadanalsex_sex), names nformat(number_d4)
 putexcel A56= matrix(sampleeveranalsex_sex)
 
+************
+* Age group
+putexcel set NYC_HANES.xlsx, sheet(ever_agegrp5c) replace
 
+*Vaginal
+svy, over(agegrp5c): prop everhadvagsex
+matrix evervagsex_age = r(table)
+matrix sampleevervagsex_age = e(N)
+putexcel A1 = matrix(evervagsex_age), names nformat(number_d4)
+putexcel A12= matrix(sampleevervagsex_age)
+
+*Oral
+svy, over(agegrp5c): prop everhadoralsex
+matrix everoralsex_age = r(table)
+matrix sampleeveroralsex_age = e(N)
+putexcel A15 = matrix(everoralsex_age), names nformat(number_d4)
+putexcel A26= matrix(sampleeveroralsex_age)
+
+*Same sex
+svy, over(agegrp5c): prop everhadsamesexsex
+matrix eversamesex_age = r(table)
+matrix sampleeversamesex_age = e(N)
+putexcel A30 = matrix(eversamesex_age), names nformat(number_d4)
+putexcel A41= matrix(sampleeversamesex_age)
+
+*Anal sex
+svy, over(agegrp5c): prop everhadanalsex
+matrix everhadanalsex_sex = r(table)
+matrix sampleeveranalsex_sex = e(N)
+putexcel A45 = matrix(everhadanalsex_sex), names nformat(number_d4)
+putexcel A56= matrix(sampleeveranalsex_sex)
+
+************
 *Race 
-putexcel set NYC_HANES_4cat_20211016.xlsx, sheet(ever_race) modify
+putexcel set NYC_HANES.xlsx, sheet(ever_race) modify
 
+*Vaginal
 svy, over(race): prop everhadvagsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix evervagsex_race = r(table)
 matrix sampleevervagsex_race = e(N)
 putexcel A1 = matrix(evervagsex_race), names nformat(number_d4)
 putexcel A12= matrix(sampleevervagsex_race)
 
+*Oral
 svy, over(race): prop everhadoralsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix everoralsex_race = r(table)
 matrix sampleeveroralsex_race = e(N)
 putexcel A15 = matrix(everoralsex_race), names nformat(number_d4)
 putexcel A26= matrix(sampleeveroralsex_race)
 
+*Same sex
 svy, over(race): prop everhadsamesexsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix eversamesex_race = r(table)
 matrix sampleeversamesex_race = e(N)
 putexcel A30 = matrix(eversamesex_race), names nformat(number_d4)
 putexcel A41= matrix(sampleeversamesex_race)
 
+*Anal
 svy, over(race): prop everhadanalsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix everhadanalsex_sex = r(table)
 matrix sampleeveranalsex_sex = e(N)
 putexcel A45 = matrix(everhadanalsex_sex), names nformat(number_d4)
 putexcel A56= matrix(sampleeveranalsex_sex)
 
-
+************
 *BMI 
+putexcel set NYC_HANES.xlsx, sheet(ever_bmi) modify
 
-putexcel set NYC_HANES_4cat_20211016.xlsx, sheet(ever_bmi) modify
-
+*Vaginal
 svy, over(bmi3cat): prop everhadvagsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix evervagsex_bmi = r(table)
 matrix sampleevervagsex_bmi = e(N)
 putexcel A1 = matrix(evervagsex_bmi), names nformat(number_d4)
 putexcel A12= matrix(sampleevervagsex_bmi)
 
+*Oral
 svy, over(bmi3cat): prop everhadoralsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix everoralsex_bmi = r(table)
 matrix sampleeveroralsex_bmi = e(N)
 putexcel A15 = matrix(everoralsex_bmi), names nformat(number_d4)
 putexcel A26= matrix(sampleeveroralsex_bmi)
 
+*Same sex
 svy, over(bmi3cat): prop everhadsamesexsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix eversamesex_bmi = r(table)
 matrix sampleeversamesex_bmi = e(N)
 putexcel A30 = matrix(eversamesex_bmi), names nformat(number_d4)
 putexcel A41= matrix(sampleeversamesex_bmi)
 
+*Anal
 svy, over(bmi3cat): prop everhadanalsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix everhadanalsex_sex = r(table)
 matrix sampleeveranalsex_sex = e(N)
@@ -287,6 +298,13 @@ putexcel A56= matrix(sampleeveranalsex_sex)
 
 
 
+*Code to get number in the manuscript results section
+*gen samesexpartners1plus=samesexpartners
+*replace samesexpartners1plus=1 if samesexpartners1plus==2
+*svy, over(gender): prop samesexpartners1plus,  stdize(agegrp4cat) stdweight(STDWGT4)
+
+
+**************************************************************
 **************
 ** Number of partners in the past year limited to those who ever had each type of sex
 replace vagsexpartners =. if everhadvagsex==0 & vagsexpartners==0
@@ -295,197 +313,238 @@ replace samesexpartners =. if everhadsamesexsex ==0 & samesexpartners==0
 replace analsexpartners =. if everhadanalsex ==0 & analsexpartners==0
 
  
-
+**************************************
 * gender
-putexcel set NYC_HANES_4cat_20211016.xlsx, sheet(sexpartners_sex) modify
+putexcel set NYC_HANES.xlsx, sheet(sexpartners_sex) modify
 
+*Vaginal
 svy, over(gender): prop vagsexpartners, stdize(agegrp4cat) stdweight(STDWGT4) 
 matrix partnersvagsex_sex = r(table)
 matrix samplepartnersvagsex_sex = e(N)
 putexcel A1 = matrix(partnersvagsex_sex), names nformat(number_d4)
 putexcel A12= matrix(samplepartnersvagsex_sex)
 
+*Oral
 svy, over(gender): prop oralsexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix partnersoralsex_sex = r(table)
 matrix samplepartnersoralsex_sex = e(N)
 putexcel A15 = matrix(partnersoralsex_sex), names nformat(number_d4)
 putexcel A26= matrix(samplepartnersoralsex_sex)
 
+*Same sex
 svy, over(gender): prop samesexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix partnerssamesex_sex = r(table)
 matrix samplepartnerssamesex_sex = e(N)
 putexcel A30 = matrix(partnerssamesex_sex), names nformat(number_d4)
 putexcel A41= matrix(samplepartnerssamesex_sex)
 
+*Anal
 svy, over(gender): prop analsexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix analsexpartners_sex = r(table)
 matrix samplepartnersanalsex_sex = e(N)
 putexcel A45 = matrix(analsexpartners_sex), names nformat(number_d4)
 putexcel A56= matrix(samplepartnersanalsex_sex)
 
-*Figure in the manuscript results section
-gen samesexpartners1plus=samesexpartners
-replace samesexpartners1plus=1 if samesexpartners1plus==2
-svy, over(gender): prop samesexpartners1plus,  stdize(agegrp4cat) stdweight(STDWGT4)
+**************************************
+* age 
+putexcel set NYC_HANES.xlsx, sheet(sexpartners_agegrp5c) modify
 
+*Vaginal
+svy, over(agegrp5c): prop vagsexpartners 
+matrix partnersvagsex_age = r(table)
+matrix samplepartnersvagsex_age = e(N)
+putexcel A1 = matrix(partnersvagsex_age), names nformat(number_d4)
+putexcel A12= matrix(samplepartnersvagsex_age)
 
-svy, over(gender): prop samesexpartners if samesexpartners>=1 , stdize(agegrp5c) stdweight(STDWGT5)
+*Oral
+svy, over(agegrp5c): prop oralsexpartners
+matrix partnersoralsex_age = r(table)
+matrix samplepartnersoralsex_age = e(N)
+putexcel A15 = matrix(partnersoralsex_age), names nformat(number_d4)
+putexcel A26= matrix(samplepartnersoralsex_age)
 
+*Vaginal
+svy, over(agegrp5c): prop samesexpartners
+matrix partnerssamesex_age = r(table)
+matrix samplepartnerssamesex_age = e(N)
+putexcel A30 = matrix(partnerssamesex_age), names nformat(number_d4)
+putexcel A41= matrix(samplepartnerssamesex_age)
 
-svy, over(gender): prop samesexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
+*Anal
+svy, over(agegrp5c): prop analsexpartners
+matrix analsexpartners_sex = r(table)
+matrix samplepartnersanalsex_sex = e(N)
+putexcel A45 = matrix(analsexpartners_sex), names nformat(number_d4)
+putexcel A56= matrix(samplepartnersanalsex_sex)
 
-
+**************************************
 * race
-putexcel set NYC_HANES_4cat_20211016.xlsx, sheet(sexpartners_race) modify
+putexcel set NYC_HANES.xlsx, sheet(sexpartners_race) modify
 
+*Vaginal
 svy, over(race): prop vagsexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix partnersvagsex_race = r(table)
 matrix samplepartnersvagsex_race = e(N)
 putexcel A1 = matrix(partnersvagsex_race), names nformat(number_d4)
 putexcel A12= matrix(samplepartnersvagsex_race)
 
+*Oral
 svy, over(race): prop oralsexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix partnersoralsex_race = r(table)
 matrix samplepartnersoralsex_race = e(N)
 putexcel A15 = matrix(partnersoralsex_race), names nformat(number_d4)
 putexcel A26= matrix(samplepartnersoralsex_race)
 
+*Same sex
 svy, over(race): prop samesexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix partnerssamesex_race = r(table)
 matrix samplepartnerssamesex_race = e(N)
 putexcel A30 = matrix(partnerssamesex_race), names nformat(number_d4)
 putexcel A41= matrix(samplepartnerssamesex_race)
 
+*Anal
 svy, over(race): prop analsexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix analsexpartners_sex = r(table)
 matrix samplepartnersanalsex_sex = e(N)
 putexcel A45 = matrix(analsexpartners_sex), names nformat(number_d4)
 putexcel A56= matrix(samplepartnersanalsex_sex)
 
+**************************************
 * bmi
-putexcel set NYC_HANES_4cat_20211016.xlsx, sheet(sexpartners_bmi) modify
+putexcel set NYC_HANES.xlsx, sheet(sexpartners_bmi) modify
 
+*Vaginal
 svy, over(bmi3cat): prop vagsexpartners, stdize(agegrp4cat) stdweight(STDWGT4) 
 matrix partnersvagsex_bmi = r(table)
 matrix samplepartnersvagsex_bmi = e(N)
 putexcel A1 = matrix(partnersvagsex_bmi), names nformat(number_d4)
 putexcel A12= matrix(samplepartnersvagsex_bmi)
 
+*Oral
 svy, over(bmi3cat): prop oralsexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix partnersoralsex_bmi = r(table)
 matrix samplepartnersoralsex_bmi = e(N)
 putexcel A15 = matrix(partnersoralsex_bmi), names nformat(number_d4)
 putexcel A26= matrix(samplepartnersoralsex_bmi)
 
+*Same sex
 svy, over(bmi3cat): prop samesexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix partnerssamesex_bmi = r(table)
 matrix samplepartnerssamesex_bmi = e(N)
 putexcel A30 = matrix(partnerssamesex_bmi), names nformat(number_d4)
 putexcel A41= matrix(samplepartnerssamesex_bmi)
 
+*Anal
 svy, over(bmi3cat): prop analsexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix analsexpartners_sex = r(table)
 matrix samplepartnersanalsex_sex = e(N)
 putexcel A45 = matrix(analsexpartners_sex), names nformat(number_d4)
 putexcel A56= matrix(samplepartnersanalsex_sex)
 
+**************************************
 ******Tabulations to obtain sample sizes
 
+* Get # of obs if the person responded at least one of the ever sex vars
 egen eversex=  rowmiss( everhadvagsex everhadoralsex everhadsamesexsex everhadanalsex)
 
 *age
 tab agegrp5c eversex if eversex!=3
-tab2xl agegrp5c eversex if eversex!=3 using NYCtabs_20211016, col(1) row(1)
+tab2xl agegrp5c eversex if eversex!=3 using NYCtabs, col(1) row(1)
 
 *gender
 tab gender eversex if eversex!=3 & agegrp4cat!=.
-tab2xl gender eversex if eversex!=3 & agegrp4cat!=. using NYCtabs_20211016, col(8) row(1)
+tab2xl gender eversex if eversex!=3 & agegrp4cat!=. using NYCtabs, col(8) row(1)
 
 *race
 tab race eversex if eversex!=3 & agegrp4cat!=.
-tab2xl race eversex if eversex!=3 & agegrp4cat!=. using NYCtabs_20211016, col(16) row(1)
+tab2xl race eversex if eversex!=3 & agegrp4cat!=. using NYCtabs, col(16) row(1)
 
 *bmi3cat
 tab bmi3cat eversex if eversex!=3 & agegrp4cat!=.
-tab2xl bmi3cat eversex if eversex!=3 & agegrp4cat!=. using NYCtabs_20211016, col(24) row(1)
+tab2xl bmi3cat eversex if eversex!=3 & agegrp4cat!=. using NYCtabs, col(24) row(1)
 
 *** sex partners
 egen anysexpart=  rowmiss( vagsexpartners oralsexpartners samesexpartners analsexpartners)
 
+* Get # of obs if the person responded at least one of the sex partners vars
+**************************************
 *age
 *age/vag
 tab agegrp5c vagsexpartners 
-tab2xl agegrp5c vagsexpartners using NYCtabs_20211016, col(1) row(12)
+tab2xl agegrp5c vagsexpartners using NYCtabs, col(1) row(12)
 
 *age/oral
 tab agegrp5c oralsexpartners 
-tab2xl agegrp5c oralsexpartners using NYCtabs_20211016, col(1) row(24)
+tab2xl agegrp5c oralsexpartners using NYCtabs, col(1) row(24)
 
 *age/samesex
 tab agegrp5c samesexpartners 
-tab2xl agegrp5c samesexpartners using NYCtabs_20211016, col(1) row(36)
-
+tab2xl agegrp5c samesexpartners using NYCtabs, col(1) row(36)
 
 *age/analsex
 tab agegrp5c analsexpartners 
-tab2xl agegrp5c analsexpartners using NYCtabs_20211016, col(1) row(48)
+tab2xl agegrp5c analsexpartners using NYCtabs, col(1) row(48)
 
+**************************************
 *gender
 *gender/vag
 tab gender vagsexpartners if agegrp4cat!=.
-tab2xl gender vagsexpartners if agegrp4cat!=. using NYCtabs_20211016, col(8) row(12)
+tab2xl gender vagsexpartners if agegrp4cat!=. using NYCtabs, col(8) row(12)
 
 *gender/oral
 tab gender oralsexpartners if agegrp4cat!=.
-tab2xl gender oralsexpartners if agegrp4cat!=. using NYCtabs_20211016, col(8) row(24)
+tab2xl gender oralsexpartners if agegrp4cat!=. using NYCtabs, col(8) row(24)
 
 *gender/samesex
 tab gender samesexpartners if agegrp4cat!=.
-tab2xl gender samesexpartners if agegrp4cat!=. using NYCtabs_20211016, col(8) row(36)
+tab2xl gender samesexpartners if agegrp4cat!=. using NYCtabs, col(8) row(36)
 
 *gender/analsex
 tab gender analsexpartners if agegrp4cat!=.
-tab2xl gender analsexpartners if agegrp4cat!=. using NYCtabs_20211016, col(8) row(48)
+tab2xl gender analsexpartners if agegrp4cat!=. using NYCtabs, col(8) row(48)
 
-
+**************************************
 *race
 *race/vag
 tab race vagsexpartners if agegrp4cat!=.
-tab2xl race  vagsexpartners if agegrp4cat!=. using NYCtabs_20211016, col(16) row(12)
+tab2xl race  vagsexpartners if agegrp4cat!=. using NYCtabs, col(16) row(12)
 
 *race/oral
 tab race oralsexpartners if agegrp4cat!=.
-tab2xl race  oralsexpartners if agegrp4cat!=. using NYCtabs_20211016, col(16) row(24)
+tab2xl race  oralsexpartners if agegrp4cat!=. using NYCtabs, col(16) row(24)
 
 *race/samesex
 tab race samesexpartners if agegrp4cat!=.
-tab2xl race  samesexpartners if agegrp4cat!=. using NYCtabs_20211016, col(16) row(36)
+tab2xl race  samesexpartners if agegrp4cat!=. using NYCtabs, col(16) row(36)
 
 *race/analsex
 tab race analsexpartners if agegrp4cat!=.
-tab2xl race  analsexpartners if agegrp4cat!=. using NYCtabs_20211016, col(16) row(48)
+tab2xl race  analsexpartners if agegrp4cat!=. using NYCtabs, col(16) row(48)
 
-
+**************************************
 *bmi
 *bmi/vag
 tab bmi3cat vagsexpartners if agegrp4cat!=.
-tab2xl bmi3cat vagsexpartners if agegrp4cat!=. using NYCtabs_20211016, col(24) row(12)
+tab2xl bmi3cat vagsexpartners if agegrp4cat!=. using NYCtabs, col(24) row(12)
 
 *bmi/oral
 tab bmi3cat oralsexpartners if agegrp4cat!=.
-tab2xl bmi3cat oralsexpartners if agegrp4cat!=. using NYCtabs_20211016, col(24) row(24)
+tab2xl bmi3cat oralsexpartners if agegrp4cat!=. using NYCtabs, col(24) row(24)
 
 *bmi/samesex
 tab bmi3cat samesexpartners if agegrp4cat!=.
-tab2xl bmi3cat samesexpartners if agegrp4cat!=. using NYCtabs_20211016, col(24) row(36)
+tab2xl bmi3cat samesexpartners if agegrp4cat!=. using NYCtabs, col(24) row(36)
 
 *bmi/analsex
 tab bmi3cat analsexpartners if agegrp4cat!=.
-tab2xl bmi3cat analsexpartners if agegrp4cat!=. using NYCtabs_20211016, col(24) row(48)
+tab2xl bmi3cat analsexpartners if agegrp4cat!=. using NYCtabs, col(24) row(48)
 
 
-
-************ NHANES
+*************
+**************************************
+**************				NHANES			**********************
+**************************************
+************ 
 
 *In SAS 
 *weight MEC4YR;
@@ -497,7 +556,6 @@ tab2xl bmi3cat analsexpartners if agegrp4cat!=. using NYCtabs_20211016, col(24) 
 use "C:\Users\rivera30\OneDrive - NYU Langone Health\NYC Sexual Behavior\Ariadne\SexBeh_repo\analytic_data\NHANES_2011_2014.dta" , clear
 
 *Restrict to only those who responded ACASI
-
 svyset sdmvpsu [pweight= mec4yr], strata(sdmvstra) singleunit(certainty) || _n
 
 
@@ -522,7 +580,6 @@ replace vagsexpartners=0 if sxq700==2 & riagendr==2
 gen everhadvagsex=.
 replace everhadvagsex=0 if sxq700==2 | sxq800==2
 replace everhadvagsex=1 if sxq700==1 | sxq800==1
-
 
 * Check if no responses translates to 0 in # of sex partners
 tab vagsexpartners sxq800 if riagendr==1, mi
@@ -589,7 +646,6 @@ replace everhadanalsex=0 if sxq706==2 | sxq806==2
 replace everhadanalsex=1 if sxq706==1 | sxq806==1
 
 
-
 * ridageyr
 * In Priscilla's code 
 *where RIDAGEYR >=20;
@@ -614,14 +670,6 @@ replace agegrp5c=2 if ridageyr>=30 & ridageyr<40
 replace agegrp5c=3 if ridageyr>=40 & ridageyr<50 
 replace agegrp5c=4 if ridageyr>=50 & ridageyr<60 
 replace agegrp5c=5 if ridageyr>=60 
-
-gen agegrp6c=.
-replace agegrp6c=1 if ridageyr>=20 & ridageyr<30
-replace agegrp6c=2 if ridageyr>=30 & ridageyr<40
-replace agegrp6c=3 if ridageyr>=40 & ridageyr<50
-replace agegrp6c=4 if ridageyr>=50 & ridageyr<60
-replace agegrp6c=5 if ridageyr>=60 & ridageyr<70
-replace agegrp6c=6 if ridageyr>=70 
 
 
 * To create BMI bmxbmi
@@ -649,7 +697,6 @@ replace race=5 if ridreth3==7
 
 gen gender=riagendr
 
-
 * create weight to standardize by age, 5 groups
 gen STDWGT4=.
 replace STDWGT4=0.2535027 if agegrp5c==1
@@ -666,100 +713,37 @@ replace STDWGT5=0.193365 if agegrp5c==3
 replace STDWGT5=0.186107 if agegrp5c==4
 replace STDWGT5=0.253177 if agegrp5c==5
 
-*weights to standardize by age and sex
-*gen STDWGTFEM=.
-*replace STDWGTFEM=0.180912 if agegrp5c==1 & gender==2
-*replace STDWGTFEM=0.172873 if agegrp5c==2 & gender==2
-*replace STDWGTFEM=0.189153 if agegrp5c==3 & gender==2
-*replace STDWGTFEM=0.184935 if agegrp5c==4 & gender==2
-*replace STDWGTFEM=0.272127 if agegrp5c==5 & gender==2
-
-*gen STDWGTMALE=.
-*replace STDWGTMALE=0.198278 if agegrp5c==1 & gender==1
-*replace STDWGTMALE=0.183522 if agegrp5c==2 & gender==1
-*replace STDWGTMALE=0.197851 if agegrp5c==3 & gender==1
-*replace STDWGTMALE=0.187354 if agegrp5c==4 & gender==1
-*replace STDWGTMALE=0.232995 if agegrp5c==5 & gender==1
-
-
-*AGEGRP6C	Population	Weight
-*1: 20-29	42687848	0.189321581
-*2: 30-39	40141741	0.178029538
-*3: 40-49	43599555	0.193365022
-*4: 50-59	41962930	0.186106553
-*5: 60-69	29253187	0.129738552
-*6: 70 and over	27832721	0.123438753
-*Total	225477982	1
-
-
-* create weight to standardize by age, 6 groups
-gen STDWGT6=.
-replace STDWGT6=0.189321581 if agegrp6c==1
-replace STDWGT6=0.178029538 if agegrp6c==2
-replace STDWGT6=0.193365022 if agegrp6c==3
-replace STDWGT6=0.186106553 if agegrp6c==4
-replace STDWGT6=0.129738552 if agegrp6c==5
-replace STDWGT6=0.123438753 if agegrp6c==6
 
 svy, over(bmi3cat): prop vagsexpartners
 svy, over(race): prop vagsexpartners
 
-
 *** Ever yes/no oral, vaginal, same sex
-* Age group
-*** Ever yes/no oral, vaginal, same sex
-
-
-*** Ever yes/no oral, vaginal, same sex
-* Age group
-putexcel set NHANES.xlsx, sheet(ever_agegrp5c) replace
-
-svy, over(agegrp5c): prop everhadvagsex
-matrix evervagsex_age = r(table)
-matrix sampleevervagsex_age = e(N)
-putexcel A1 = matrix(evervagsex_age), names nformat(number_d4)
-putexcel A12= matrix(sampleevervagsex_age)
-
-svy, over(agegrp5c): prop everhadoralsex
-matrix everoralsex_age = r(table)
-matrix sampleeveroralsex_age = e(N)
-putexcel A15 = matrix(everoralsex_age), names nformat(number_d4)
-putexcel A26= matrix(sampleeveroralsex_age)
-
-svy, over(agegrp5c): prop everhadsamesexsex
-matrix eversamesex_age = r(table)
-matrix sampleeversamesex_age = e(N)
-putexcel A30 = matrix(eversamesex_age), names nformat(number_d4)
-putexcel A41= matrix(sampleeversamesex_age)
-
-svy, over(agegrp5c): prop everhadanalsex
-matrix everanalsex_age = r(table)
-matrix sampleeveranalsex_age = e(N)
-putexcel A45 = matrix(everanalsex_age), names nformat(number_d4)
-putexcel A56= matrix(sampleeveranalsex_age)
-
-
+**********
 *Sex 
-putexcel set NHANES_4cat_20211016.xlsx, sheet(ever_sex) modify
+putexcel set NHANES.xlsx, sheet(ever_sex) modify
 
+*Vaginal
 svy, over(gender): prop everhadvagsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix evervagsex_sex = r(table)
 matrix sampleevervagsex_sex = e(N)
 putexcel A1 = matrix(evervagsex_sex), names nformat(number_d4)
 putexcel A12= matrix(sampleevervagsex_sex)
 
+*Oral
 svy, over(gender): prop everhadoralsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix everoralsex_sex = r(table)
 matrix sampleeveroralsex_sex = e(N)
 putexcel A15 = matrix(everoralsex_sex), names nformat(number_d4)
 putexcel A26= matrix(sampleeveroralsex_sex)
 
+*Same sex
 svy, over(gender): prop everhadsamesexsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix eversamesex_sex = r(table)
 matrix sampleeversamesex_sex = e(N)
 putexcel A30 = matrix(eversamesex_sex), names nformat(number_d4)
 putexcel A41= matrix(sampleeversamesex_sex)
 
+*Anal
 svy, over(gender): prop everhadanalsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix everanalsex_age = r(table)
 matrix sampleeveranalsex_age = e(N)
@@ -767,148 +751,224 @@ putexcel A45 = matrix(everanalsex_age), names nformat(number_d4)
 putexcel A56= matrix(sampleeveranalsex_age)
 
 
-*Race 
-putexcel set NHANES_4cat_20211016.xlsx, sheet(ever_race) modify
+**************
+* Age group
+putexcel set NHANES.xlsx, sheet(ever_agegrp5c) replace
 
+*Vaginal
+svy, over(agegrp5c): prop everhadvagsex
+matrix evervagsex_age = r(table)
+matrix sampleevervagsex_age = e(N)
+putexcel A1 = matrix(evervagsex_age), names nformat(number_d4)
+putexcel A12= matrix(sampleevervagsex_age)
+
+*Oral
+svy, over(agegrp5c): prop everhadoralsex
+matrix everoralsex_age = r(table)
+matrix sampleeveroralsex_age = e(N)
+putexcel A15 = matrix(everoralsex_age), names nformat(number_d4)
+putexcel A26= matrix(sampleeveroralsex_age)
+
+*Same sex
+svy, over(agegrp5c): prop everhadsamesexsex
+matrix eversamesex_age = r(table)
+matrix sampleeversamesex_age = e(N)
+putexcel A30 = matrix(eversamesex_age), names nformat(number_d4)
+putexcel A41= matrix(sampleeversamesex_age)
+
+*Anal
+svy, over(agegrp5c): prop everhadanalsex
+matrix everanalsex_age = r(table)
+matrix sampleeveranalsex_age = e(N)
+putexcel A45 = matrix(everanalsex_age), names nformat(number_d4)
+putexcel A56= matrix(sampleeveranalsex_age)
+
+**********
+*Race 
+putexcel set NHANES.xlsx, sheet(ever_race) modify
+
+*Vaginal
 svy, over(race): prop everhadvagsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix evervagsex_race = r(table)
 matrix sampleevervagsex_race = e(N)
 putexcel A1 = matrix(evervagsex_race), names nformat(number_d4)
 putexcel A12= matrix(sampleevervagsex_race)
 
+*Oral
 svy, over(race): prop everhadoralsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix everoralsex_race = r(table)
 matrix sampleeveroralsex_race = e(N)
 putexcel A15 = matrix(everoralsex_race), names nformat(number_d4)
 putexcel A26= matrix(sampleeveroralsex_race)
 
+*Same sex
 svy, over(race): prop everhadsamesexsex,  stdize(agegrp4cat) stdweight(STDWGT4)
 matrix eversamesex_race = r(table)
 matrix sampleeversamesex_race = e(N)
 putexcel A30 = matrix(eversamesex_race), names nformat(number_d4)
 putexcel A41= matrix(sampleeversamesex_race)
 
+*Anal
 svy, over(race): prop everhadanalsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix everanalsex_age = r(table)
 matrix sampleeveranalsex_age = e(N)
 putexcel A45 = matrix(everanalsex_age), names nformat(number_d4)
 putexcel A56= matrix(sampleeveranalsex_age)
 
+*********
 *BMI 
+putexcel set NHANES.xlsx, sheet(ever_bmi) modify
 
-putexcel set NHANES_4cat_20211016.xlsx, sheet(ever_bmi) modify
-
+*Vaginal
 svy, over(bmi3cat): prop everhadvagsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix evervagsex_bmi = r(table)
 matrix sampleevervagsex_bmi = e(N)
 putexcel A1 = matrix(evervagsex_bmi), names nformat(number_d4)
 putexcel A12= matrix(sampleevervagsex_bmi)
 
+*Oral
 svy, over(bmi3cat): prop everhadoralsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix everoralsex_bmi = r(table)
 matrix sampleeveroralsex_bmi = e(N)
 putexcel A15 = matrix(everoralsex_bmi), names nformat(number_d4)
 putexcel A26= matrix(sampleeveroralsex_bmi)
 
+*Same sex
 svy, over(bmi3cat): prop everhadsamesexsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix eversamesex_bmi = r(table)
 matrix sampleeversamesex_bmi = e(N)
 putexcel A30 = matrix(eversamesex_bmi), names nformat(number_d4)
 putexcel A41= matrix(sampleeversamesex_bmi)
 
+*Anal
 svy, over(bmi3cat): prop everhadanalsex, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix everanalsex_age = r(table)
 matrix sampleeveranalsex_age = e(N)
 putexcel A45 = matrix(everanalsex_age), names nformat(number_d4)
 putexcel A56= matrix(sampleeveranalsex_age)
 
+*Code to get number in the manuscript results section
+gen samesexpartners1plus=samesexpartners
+replace samesexpartners1plus=1 if samesexpartners1plus==2
+svy, over(gender): prop samesexpartners1plus,  stdize(agegrp4cat) stdweight(STDWGT4)
+
 **************
 ** Number of partners in the past year limited to those who ever had each type of sex
-
 replace vagsexpartners =. if everhadvagsex==0 & vagsexpartners==0
 replace oralsexpartners =. if everhadoralsex==0 & oralsexpartners==0
 replace samesexpartners =. if everhadsamesexsex ==0 & samesexpartners==0
 
+*********
+* Gender
+putexcel set NHANES.xlsx, sheet(sexpartners_sex) modify
 
-* gender
-putexcel set NHANES_4cat_20211016.xlsx, sheet(sexpartners_sex) modify
-
+*Vaginal
 svy, over(gender): prop vagsexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix partnersvagsex_sex = r(table)
 matrix samplepartnersvagsex_sex = e(N)
 putexcel A1 = matrix(partnersvagsex_sex), names nformat(number_d4)
 putexcel A12= matrix(samplepartnersvagsex_sex)
 
+*Oral
 svy, over(gender): prop oralsexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix partnersoralsex_sex = r(table)
 matrix samplepartnersoralsex_sex = e(N)
 putexcel A15 = matrix(partnersoralsex_sex), names nformat(number_d4)
 putexcel A26= matrix(samplepartnersoralsex_sex)
 
-
+*Same sex
 svy, over(gender): prop samesexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix partnerssamesex_sex = r(table)
 matrix samplepartnerssamesex_sex = e(N)
 putexcel A30 = matrix(partnerssamesex_sex), names nformat(number_d4)
 putexcel A41= matrix(samplepartnerssamesex_sex)
 
+********
+* Age
+putexcel set NHANES.xlsx, sheet(sexpartners_agegrp5c) modify
+
+*Vaginal
+svy, over(agegrp5c): prop vagsexpartners 
+matrix partnersvagsex_age = r(table)
+matrix samplepartnersvagsex_age = e(N)
+putexcel A1 = matrix(partnersvagsex_age), names nformat(number_d4)
+putexcel A12= matrix(samplepartnersvagsex_age)
+
+*Oral
+svy, over(agegrp5c): prop oralsexpartners
+matrix partnersoralsex_age = r(table)
+matrix samplepartnersoralsex_age = e(N)
+putexcel A15 = matrix(partnersoralsex_age), names nformat(number_d4)
+putexcel A26= matrix(samplepartnersoralsex_age)
+
+*Same Sex
+svy, over(agegrp5c): prop samesexpartners
+matrix partnerssamesex_age = r(table)
+matrix samplepartnerssamesex_age = e(N)
+putexcel A30 = matrix(partnerssamesex_age), names nformat(number_d4)
+putexcel A41= matrix(samplepartnerssamesex_age)
 
 
-*Figure in the manuscript results section
-gen samesexpartners1plus=samesexpartners
-replace samesexpartners1plus=1 if samesexpartners1plus==2
-svy, over(gender): prop samesexpartners1plus,  stdize(agegrp4cat) stdweight(STDWGT4)
 
+********
+*Race
+putexcel set NHANES.xlsx, sheet(sexpartners_race) modify
 
-
-* race
-putexcel set NHANES_4cat_20211016.xlsx, sheet(sexpartners_race) modify
-
+*Vaginal
 svy, over(race): prop vagsexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix partnersvagsex_race = r(table)
 matrix samplepartnersvagsex_race = e(N)
 putexcel A1 = matrix(partnersvagsex_race), names nformat(number_d4)
 putexcel A12= matrix(samplepartnersvagsex_race)
 
+*Oral
 svy, over(race): prop oralsexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix partnersoralsex_race = r(table)
 matrix samplepartnersoralsex_race = e(N)
 putexcel A15 = matrix(partnersoralsex_race), names nformat(number_d4)
 putexcel A26= matrix(samplepartnersoralsex_race)
 
+*Same sex
 svy, over(race): prop samesexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix partnerssamesex_race = r(table)
 matrix samplepartnerssamesex_race = e(N)
 putexcel A30 = matrix(partnerssamesex_race), names nformat(number_d4)
 putexcel A41= matrix(samplepartnerssamesex_race)
 
-* bmi
-putexcel set NHANES_4cat_20211016.xlsx, sheet(sexpartners_bmi) modify
+********
+* BMI
+putexcel set NHANES.xlsx, sheet(sexpartners_bmi) modify
 
+*Vaginal
 svy, over(bmi3cat): prop vagsexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix partnersvagsex_bmi = r(table)
 matrix samplepartnersvagsex_bmi = e(N)
 putexcel A1 = matrix(partnersvagsex_bmi), names nformat(number_d4)
 putexcel A12= matrix(samplepartnersvagsex_bmi)
 
+*Oral
 svy, over(bmi3cat): prop oralsexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix partnersoralsex_bmi = r(table)
 matrix samplepartnersoralsex_bmi = e(N)
 putexcel A15 = matrix(partnersoralsex_bmi), names nformat(number_d4)
 putexcel A26= matrix(samplepartnersoralsex_bmi)
 
+*Same sex
 svy, over(bmi3cat): prop samesexpartners, stdize(agegrp4cat) stdweight(STDWGT4)
 matrix partnerssamesex_bmi = r(table)
 matrix samplepartnerssamesex_bmi = e(N)
 putexcel A30 = matrix(partnerssamesex_bmi), names nformat(number_d4)
 putexcel A41= matrix(samplepartnerssamesex_bmi)
 
+**************************************
+******Tabulations to obtain sample sizes
 
+* Get # of obs if the person responded at least one of the ever sex vars
 egen eversex=  rowmiss( everhadvagsex everhadoralsex everhadsamesexsex everhadanalsex)
 
 *age
 tab agegrp5c eversex if eversex!=3
-tab2xl agegrp5c eversex if eversex!=3 using NHANEStabs_20211016, col(1) row(1)
+tab2xl agegrp5c eversex if eversex!=3 using NHANEStabs, col(1) row(1)
 
 *gender
 tab gender eversex if eversex!=3  & agegrp4cat!=.
@@ -923,58 +983,62 @@ tab bmi3cat eversex if eversex!=3  & agegrp4cat!=.
 tab2xl bmi3cat eversex if eversex!=3 & agegrp4cat!=. using NHANEStabs_20211016, col(24) row(1)
 
 
+* Get # of obs if the person responded at least one of the sex partner vars
 *** sex partners
 egen anysexpart=  rowmiss( vagsexpartners oralsexpartners samesexpartners)
 
+****
 *age
 *age/vag
 tab agegrp5c vagsexpartners 
-tab2xl agegrp5c vagsexpartners using NHANEStabs_20211016, col(1) row(12)
+tab2xl agegrp5c vagsexpartners using NHANEStabs, col(1) row(12)
 
 *age/oral
 tab agegrp5c oralsexpartners 
-tab2xl agegrp5c oralsexpartners using NHANEStabs_20211016, col(1) row(24)
+tab2xl agegrp5c oralsexpartners using NHANEStabs, col(1) row(24)
 
 *age/oral
 tab agegrp5c samesexpartners 
-tab2xl agegrp5c samesexpartners using NHANEStabs_20211016, col(1) row(36)
+tab2xl agegrp5c samesexpartners using NHANEStabs, col(1) row(36)
 
+****
 *gender
 *gender/vag
 tab gender vagsexpartners if agegrp4cat!=.
-tab2xl gender vagsexpartners if agegrp4cat!=. using NHANEStabs_20211016, col(8) row(12)
+tab2xl gender vagsexpartners if agegrp4cat!=. using NHANEStabs, col(8) row(12)
 
 *gender/oral
 tab gender oralsexpartners if agegrp4cat!=.
-tab2xl gender oralsexpartners if agegrp4cat!=. using NHANEStabs_20211016, col(8) row(24)
+tab2xl gender oralsexpartners if agegrp4cat!=. using NHANEStabs, col(8) row(24)
 
 *gender/samesex
 tab gender samesexpartners if agegrp4cat!=.
-tab2xl gender samesexpartners if agegrp4cat!=. using NHANEStabs_20211016, col(8) row(36)
+tab2xl gender samesexpartners if agegrp4cat!=. using NHANEStabs, col(8) row(36)
 
+****
 *race
 *race/vag
 tab race vagsexpartners if agegrp4cat!=.
-tab2xl race  vagsexpartners if agegrp4cat!=. using NHANEStabs_20211016, col(16) row(12)
+tab2xl race  vagsexpartners if agegrp4cat!=. using NHANEStabs, col(16) row(12)
 
 *race/oral
 tab race oralsexpartners if agegrp4cat!=.
-tab2xl race  oralsexpartners if agegrp4cat!=. using NHANEStabs_20211016, col(16) row(24)
+tab2xl race  oralsexpartners if agegrp4cat!=. using NHANEStabs, col(16) row(24)
 
 *race/samesex
 tab race samesexpartners if agegrp4cat!=.
-tab2xl race  samesexpartners if agegrp4cat!=. using NHANEStabs_20211016, col(16) row(36)
+tab2xl race  samesexpartners if agegrp4cat!=. using NHANEStabs, col(16) row(36)
 
-
+****
 *bmi
 *bmi/vag
 tab bmi3cat vagsexpartners if agegrp4cat!=.
-tab2xl bmi3cat vagsexpartners if agegrp4cat!=. using NHANEStabs_20211016, col(24) row(12)
+tab2xl bmi3cat vagsexpartners if agegrp4cat!=. using NHANEStabs, col(24) row(12)
 
 *bmi/oral
 tab bmi3cat oralsexpartners if agegrp4cat!=.
-tab2xl bmi3cat oralsexpartners if agegrp4cat!=. using NHANEStabs_20211016, col(24) row(24)
+tab2xl bmi3cat oralsexpartners if agegrp4cat!=. using NHANEStabs, col(24) row(24)
 
 *bmi/samesex
 tab bmi3cat samesexpartners if agegrp4cat!=.
-tab2xl bmi3cat samesexpartners if agegrp4cat!=. using NHANEStabs_20211016, col(24) row(36)
+tab2xl bmi3cat samesexpartners if agegrp4cat!=. using NHANEStabs, col(24) row(36)
