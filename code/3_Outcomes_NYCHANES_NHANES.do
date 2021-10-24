@@ -972,15 +972,15 @@ tab2xl agegrp5c eversex if eversex!=3 using NHANEStabs, col(1) row(1)
 
 *gender
 tab gender eversex if eversex!=3  & agegrp4cat!=.
-tab2xl gender eversex if eversex!=3 & agegrp4cat!=. using NHANEStabs_20211016, col(8) row(1)
+tab2xl gender eversex if eversex!=3 & agegrp4cat!=. using NHANEStabs, col(8) row(1)
 
 *race
 tab race eversex if eversex!=3  & agegrp4cat!=.
-tab2xl race eversex if eversex!=3 & agegrp4cat!=. using NHANEStabs_20211016, col(16) row(1)
+tab2xl race eversex if eversex!=3 & agegrp4cat!=. using NHANEStabs, col(16) row(1)
 
 *bmi3cat
 tab bmi3cat eversex if eversex!=3  & agegrp4cat!=.
-tab2xl bmi3cat eversex if eversex!=3 & agegrp4cat!=. using NHANEStabs_20211016, col(24) row(1)
+tab2xl bmi3cat eversex if eversex!=3 & agegrp4cat!=. using NHANEStabs, col(24) row(1)
 
 
 * Get # of obs if the person responded at least one of the sex partner vars
