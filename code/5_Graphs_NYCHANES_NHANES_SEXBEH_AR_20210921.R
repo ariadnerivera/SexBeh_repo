@@ -16,7 +16,7 @@ library(scales)
 setwd("C:/Users/rivera30/OneDrive - NYU Langone Health/NYC Sexual Behavior/Ariadne/SexBeh_repo/results")
 
 # Read file with compiled outcomes by demographic characteristic
-d <- read_excel("Outcomes_ageadjusted4agecat_20210817.xlsx", sheet = "Outcomes")
+d <- read_excel("Outcomes_ageadjusted4agecat.xlsx", sheet = "Outcomes")
 
 
 # Subset lifetime prevalence variables
@@ -658,3 +658,4 @@ analpartners_bmi_gp_comb3 + facet_wrap(~Group, ncol = 5,  scales = "free_x") +
   theme(strip.background = element_blank(), strip.placement = "outside")
 
 ggsave("analpartners_bmi_gp_comb_updated20210921.png", dpi=1200, height=3.7, width=7.3, units="in")
+
