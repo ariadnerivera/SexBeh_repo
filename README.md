@@ -5,8 +5,8 @@ and NHANES data.
 All data files used in this analysis are publicly available.
 
 **NHANES**
-We will need the files for: demographic data, reproductive health, sexual health,
-and BMI.
+From NHANES We will need the files for: demographic data, reproductive health,
+sexual health, and BMI.
 
 * NHANES data for 2011-2012 can be downloaded from https://wwwn.cdc.gov/nchs/nhanes/continuousnhanes/default.aspx?BeginYear=2011
 
